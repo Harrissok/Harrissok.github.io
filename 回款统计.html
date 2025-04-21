@@ -1,0 +1,242 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>采油厂及油公司第一季度回款统计</title>
+<style>
+:root {
+  --bar-width: 28px;
+  --bar-gap: 4px;
+  --label-height: 120px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #f8fafc;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.chart-container {
+  max-width: 98vw;
+  margin: 30px auto;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.chart-title {
+  text-align: center;
+  color: #1e293b;
+  margin-bottom: 2rem;
+  font-size: clamp(1.2rem, 3vw, 1.8rem);
+}
+
+.chart-wrapper {
+  display: flex;
+  justify-content: center; /* 新增：水平居中 */
+}
+
+.bar-chart {
+  display: inline-flex; /* 修改为行内弹性盒子 */
+  gap: clamp(15px, 3vw, 25px);
+  min-height: 500px;
+  padding: 0 2vw;
+}
+
+.bar-group {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: calc(var(--bar-width)*2 + var(--bar-gap) + 10px);
+}
+
+.bar-set {
+  display: flex;
+  gap: var(--bar-gap);
+  height: 450px;
+  align-items: flex-end;
+}
+
+.bar {
+  width: var(--bar-width);
+  border-radius: 3px 3px 0 0;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+ z-index: 0; /* 添加默认层叠顺序 */
+}
+
+.bar-2024 { background: #3b82f6; }
+.bar-2025 { background: #f59e0b; }
+
+.x-axis-label {
+  width: 100%;
+  font-size: clamp(0.6rem, 1.5vw, 0.8rem);
+  color: #64748b;
+  text-align: center;
+  margin-top: 10px;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  height: var(--label-height);
+  overflow: visible;
+}
+
+.value-label {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  color: #1e293b;
+  background: rgba(255,255,255,0.95);
+  padding: 2px 6px;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  opacity: 1;
+  white-space: nowrap;
+  font-weight: 500;
+  z-index: 1;  /* 确保标签显示在父元素上方 */
+}
+
+.bar:hover {
+  filter: brightness(1.1);
+  transform: translateY(-3px);
+z-index: 999;
+}
+
+.bar:hover .value-label {
+  opacity: 1;
+}
+.bar:hover .value-label {
+  opacity: 1;
+}
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 30px;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 15px;
+  background: #f1f5f9;
+  border-radius: 15px;
+  font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --bar-width: 22px;
+    --label-height: 90px;
+  }
+  .bar-set {
+    height: 300px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="chart-container">
+  <h1 class="chart-title">采油厂及油公司第一季度回款统计 (单位：万元)</h1>
+    <div class="legend">
+    <div class="legend-item">
+      <div class="legend-color" style="background: #3b82f6"></div>
+      <span>2024年第一季度<br></span>
+
+<span>合计：4541.52 万元</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background: #f59e0b"></div>
+      <span>2025年第一季度<br></span>
+
+<span>合计：3952.51 万元</span>
+    </div>
+  </div>
+</div>
+<div >
+  <div class="chart-wrapper">
+    <div class="bar-chart" id="chart"></div>
+  </div>
+  </div>
+
+<script>
+// 完整数据
+const data = [
+   { name: '东辛', y2024: 307.21, y2025: 463.01 },
+  { name: '供应处', y2024: 2495.85, y2025: 1090.98 },
+  { name: '工程公司', y2024: 1480.41, y2025: 2244.04 },
+  { name: '胜采', y2024: 237.79, y2025: 109.81 },
+  { name: '河口', y2024: 0.68, y2025: 0 },
+  { name: '鲁胜', y2024: 9.58, y2025: 0 },
+  { name: '中胜', y2024: 0, y2025: 12.37 },
+  { name: '摩森机电', y2024: 0, y2025: 32.29 },
+  { name: '物华实业', y2024: 10, y2025: 0 }
+];
+
+const maxValue = Math.max(...data.flatMap(d => [d.y2024, d.y2025]));
+const chart = document.getElementById('chart');
+
+// 生成图表
+data.forEach(item => {
+  const group = document.createElement('div');
+  group.className = 'bar-group';
+  
+  const barSet = document.createElement('div');
+  barSet.className = 'bar-set';
+  
+  // 2024年柱子
+  const bar2024 = document.createElement('div');
+  bar2024.className = 'bar bar-2024';
+  bar2024.style.height = `${(item.y2024/maxValue)*100}%`;
+  bar2024.dataset.value = item.y2024;
+  bar2024.innerHTML = `<div class="value-label">${item.y2024.toFixed(2)}万</div>`;
+  
+  // 2025年柱子
+  const bar2025 = document.createElement('div');
+  bar2025.className = 'bar bar-2025';
+  bar2025.style.height = `${(item.y2025/maxValue)*100}%`;
+  bar2025.dataset.value = item.y2025;
+  bar2025.innerHTML = `<div class="value-label">${item.y2025.toFixed(2)}万</div>`;
+  
+  // X轴标签
+  const label = document.createElement('div');
+  label.className = 'y-axis-label';
+  label.textContent = item.name;
+
+  barSet.appendChild(bar2024);
+  barSet.appendChild(bar2025);
+  group.appendChild(barSet);
+  group.appendChild(label);
+  chart.appendChild(group);
+});
+
+// 自适应调整
+window.addEventListener('resize', () => {
+  document.querySelectorAll('.bar').forEach(bar => {
+    const value = parseFloat(bar.dataset.value);
+    bar.style.height = `${(value/maxValue)*100}%`;
+  });
+});
+</script>
+</body>
+</html>
